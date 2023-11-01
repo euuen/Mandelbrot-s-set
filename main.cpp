@@ -44,7 +44,7 @@ int main()
     RenderWindow window(VideoMode(width, height), "Mandelbort", Style::Titlebar | Style::Close);
     window.setFramerateLimit(60);
     View view = window.getView();
-    view.move(Vector2f(-300, -300));
+    view.setCenter(Vector2f(0,0));
     window.setView(view);
     loop(window);
     return 0;
@@ -229,6 +229,7 @@ void render()
 {
     using namespace sf;
     double scalar = pixelToDistance*pow(10,-zooms);
+    canvas.clear();
     for (int x = -width/2;x <= width/2;x++)
     {
         for (int y = -height/2;y <= height/2;y++)
