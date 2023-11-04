@@ -1,4 +1,6 @@
 #include <iostream>
+#include <Windows.h>
+#include <thread>
 #include <math.h>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
@@ -6,8 +8,8 @@
 //优化运算速度
 class Complex
 {
-    double* realNum;
-    double* imageNum;
+    double realNum;
+    double imageNum;
 public:
     Complex();
     Complex(const Complex& _target);
@@ -26,21 +28,25 @@ public:
 };
 
 Complex iter_func(const Complex& x, const Complex& c);
-int cals_steps(Complex c, int maxIterNum=255);
+int cals_steps(Complex c, int maxIterNum=300);
 void loop(sf::RenderWindow& window);
-void render();
+void render_up();
+void render_down();
 /////////////////////////////////////////////////////////////////////////////////////////////
-bool needRender = true;
+bool needRenderUp = true;
+bool needRenderDown = true;
 int width = 600, height = 600;
 double pixelToDistance = 0.0066667;
 double zooms = 0.0d;
 Complex center(0,0);
-sf::VertexArray canvas(sf::Points, 358801);
+sf::VertexArray canvasUp(sf::Points, 180000);
+sf::VertexArray canvasDown(sf::Points, 180000);
 
 int main()
 {
     using namespace std;
     using namespace sf;
+    thread t1(render_down), t2(render_up);
     RenderWindow window(VideoMode(width, height), "Mandelbort", Style::Titlebar | Style::Close);
     window.setFramerateLimit(60);
     View view = window.getView();
@@ -52,68 +58,62 @@ int main()
 /////////////////////////////////////////////////////////////////////////////////////////////
 Complex::Complex()
 {
-    realNum = new double;
-    imageNum = new double;
+
 }
 
 Complex::Complex(const Complex& _target)
 {
-    realNum = new double;
-    imageNum = new double;
-    *realNum = *(_target.realNum);
-    *imageNum = *(_target.imageNum);
+    realNum = _target.realNum;
+    imageNum = _target.imageNum;
 }
 
 Complex::Complex(const double& _realNum, const double& _imageNum)
 {
-    realNum = new double;
-    imageNum = new double;
-    *realNum = _realNum;
-    *imageNum = _imageNum;
+    realNum = _realNum;
+    imageNum = _imageNum;
 }
 
 Complex::~Complex()
 {
-    delete realNum;
-    delete imageNum;
+
 }
 
 Complex& Complex::operator=(const Complex& _target)
 {
-    *realNum = *(_target.realNum);
-    *imageNum = *(_target.imageNum);
+    realNum = _target.realNum;
+    imageNum = _target.imageNum;
     return *this;
 }
 
 void Complex::set_realNum(const double& _realNum)
 {
-    *realNum = _realNum;
+    realNum = _realNum;
 }
 
 void Complex::set_imageNum(const double& _imageNum)
 {
-    *imageNum = _imageNum;
+    imageNum = _imageNum;
 }
 
 double Complex::get_realNum()
 {
-    return *realNum;
+    return realNum;
 }
 
 double Complex::get_imageNum()
 {
-    return *imageNum;
+    return imageNum;
 }
 
 void Complex::print()
 {
     using namespace std;
-    cout<< *realNum <<"+"  << *imageNum<< "i"<< endl;
+    cout<< realNum <<"+"  << imageNum<< "i"<< endl;
 }
 
 double Complex::abs()
 {
-    return (sqrt(pow(*realNum, 2) + pow(*imageNum, 2)));
+    return (sqrt(pow(realNum, 2) + pow(imageNum, 2)));
 }
 
 
@@ -121,8 +121,8 @@ Complex Complex::square() const
 {
 //    using namespace std;
     Complex result;
-    result.set_realNum(pow(*realNum, 2) - pow(*imageNum, 2));
-    result.set_imageNum(2*(*realNum)*(*imageNum));
+    result.set_realNum(pow(realNum, 2) - pow(imageNum, 2));
+    result.set_imageNum(2*(realNum)*(imageNum));
 //    cout<<"real"<<(pow(realNum, 2) - pow(imageNum, 2))<<endl;
 //    cout<<"image"<<(2*realNum*imageNum)<<endl;
     return result;
@@ -131,8 +131,8 @@ Complex Complex::square() const
 Complex Complex::add(const Complex& _target) const
 {
     Complex result;
-    result.set_realNum(*realNum + *_target.realNum);
-    result.set_imageNum(*imageNum + *_target.imageNum);
+    result.set_realNum(realNum + _target.realNum);
+    result.set_imageNum(imageNum + _target.imageNum);
     return result;
 }
 
@@ -173,32 +173,38 @@ void loop(sf::RenderWindow& window)
                 switch (event.key.code)
                 {
                 case Keyboard::Key::Left:
-                    newLNum = center.get_realNum()- 0.25d*zooms;
+                    newLNum = center.get_realNum() - 0.25d*pow(10,-zooms);
                     center.set_realNum(newLNum);
-                    needRender = true;
+                    needRenderUp = true;
+                    needRenderDown = true;
                     break;
                 case Keyboard::Key::Right:
-                    newRNum = center.get_realNum()+ 0.25d*zooms;
+                    newRNum = center.get_realNum() + 0.25d*pow(10,-zooms);
                     center.set_realNum(newRNum);
-                    needRender = true;
+                   needRenderUp = true;
+                    needRenderDown = true;
                     break;
                 case Keyboard::Key::Up:
-                    newUNum = center.get_imageNum() + 0.25d*zooms;
+                    newUNum = center.get_imageNum() - 0.25d*pow(10,-zooms);
                     center.set_imageNum(newUNum);
-                    needRender = true;
+                    needRenderUp = true;
+                    needRenderDown = true;
                     break;
                 case Keyboard::Key::Down:
-                    newDNum = center.get_imageNum() - 0.25d*zooms;
+                    newDNum = center.get_imageNum() + 0.25d*pow(10,-zooms);
                     center.set_imageNum(newDNum);
-                    needRender = true;
+                    needRenderUp = true;
+                    needRenderDown = true;
                     break;
                 case Keyboard::Key::Dash:
                     zooms -= 0.1;
-                    needRender = true;
+                    needRenderUp = true;
+                    needRenderDown = true;
                     break;
                 case Keyboard::Key::Equal:
                     zooms += 0.1;
-                    needRender = true;
+                    needRenderUp = true;
+                    needRenderDown = true;
                     break;
                 default:
                     break;
@@ -213,33 +219,62 @@ void loop(sf::RenderWindow& window)
                 break;
             }
         }
-        if (needRender)
+        if (!needRenderUp && !needRenderDown)
         {
             window.clear(Color::White);
-            render();
-            window.draw(canvas);
+            window.draw(canvasUp);
+            window.draw(canvasDown);
             window.display();
-            window.draw(canvas);
+            window.draw(canvasUp);
+            window.draw(canvasDown);
+
         }
         window.display();
     }
 }
 
-void render()
+void render_down()
 {
     using namespace sf;
-    double scalar = pixelToDistance*pow(10,-zooms);
-    canvas.clear();
-    for (int x = -width/2;x <= width/2;x++)
+    while (true)
     {
-        for (int y = -height/2;y <= height/2;y++)
+        while (!needRenderDown) Sleep(10);
+        double scalar = pixelToDistance*pow(10,-zooms);
+        canvasDown.clear();
+        for (int x = -width/2;x <= width/2;x++)
         {
-            Complex point(center.get_realNum() + x*scalar,
-                          center.get_imageNum() + y*scalar);
-            canvas.append(Vertex(Vector2f(x,y),Color(0,0,cals_steps(point))));
+            for (int y = -height/2;y <= 0;y++)
+            {
+                Complex point(center.get_realNum() + x*scalar,
+                              center.get_imageNum() + y*scalar);
+                canvasDown.append(Vertex(Vector2f(x,y),Color(0,0,cals_steps(point)*20)));
+            }
         }
+        needRenderDown = false;
     }
-    needRender = false;
+
+}
+
+void render_up()
+{
+    using namespace sf;
+    while (true)
+    {
+        while (!needRenderUp) Sleep(10);
+        double scalar = pixelToDistance*pow(10,-zooms);
+        canvasUp.clear();
+        for (int x = -width/2;x <= width/2;x++)
+        {
+            for (int y = 0;y <= height/2;y++)
+            {
+                Complex point(center.get_realNum() + x*scalar,
+                              center.get_imageNum() + y*scalar);
+                canvasUp.append(Vertex(Vector2f(x,y),Color(0,0,cals_steps(point)*20)));
+            }
+        }
+        needRenderUp = false;
+    }
+
 }
 
 
