@@ -10,3 +10,4 @@ To show the beauty of math, which is from Mandelbrot's set
 
 
   now ,the main(new).cpp using the opengl, it can run faster than before
+![1](https://github.com/euuen/Mandelbrot-s-set/assets/114995880/7df87002-8c28-41fc-bded-d84319ae5421)
