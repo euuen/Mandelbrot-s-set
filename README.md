@@ -9,5 +9,6 @@ To show the beauty of math, which is from Mandelbrot's set
 
 
 
-  now ,the main(new).cpp using the opengl, it can run faster than before
+  now ,the main(new).cpp using the opengl, it can run faster than before.You can change the maxIterTimes to select the fit precision for you computer ,which is in fragShader.glsl line 12.
+  The number of maxIterTimes bigger, the precision higher, but also the payment of calculation higher, which can make you computer run slowly.
 ![1](https://github.com/euuen/Mandelbrot-s-set/assets/114995880/7df87002-8c28-41fc-bded-d84319ae5421)
